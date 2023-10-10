@@ -14,7 +14,7 @@ BRIGHT_GREEN = (0, 255, 0)
 
 # Datos del servidor SQL
 server = "LAPTOP-SUA8H24U\SQLEXPRESS"
-database = "BDTest"
+database = "usuarios"
 usuario = "sa"
 password = "12345"
 
