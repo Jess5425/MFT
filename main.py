@@ -1,8 +1,10 @@
 import json
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import filedialog
+import shutil
 
-global cont
+global cont, username, password
 cont = 0
 
 # Crear o abrir el archivo 'usuarios.json' con un diccionario vacío
@@ -13,6 +15,7 @@ except FileNotFoundError:
     usuarios = {}
 
 def registrar():
+    global username, password
     username = entry_username.get()
     password = entry_password.get()
 
@@ -24,17 +27,49 @@ def registrar():
             json.dump(usuarios, archivo)
         entry_username.delete(0, 'end')
         entry_password.delete(0, 'end')
-        messagebox.showinfo("Registro", "Usuario registrado con éxito.")
-        ventana_registro = tk.Toplevel()
-        ventana_registro.geometry("568x650")
+
+        #messagebox.showinfo("Registro", "Usuario registrado con éxito.")
+        ventanaP.withdraw()
+        ventana_registro = tk.Toplevel() #ventana que nos va a ayudar a recopilar mas datos como foto, correo, cancion
+        ventana_registro.geometry("500x350")
         ventana_registro.resizable(False, False)
 
-        # canvas
-        canvas = tk.Canvas(ventana_registro, width=568, height=650, bg="#D5D2FF")
+        #Canva donde se van a poner los labels
+        canvas = tk.Canvas(ventana_registro, width=500, height=400, bg="#D5D2FF")
         canvas.place(x=0, y=0)
 
+        #label y lugar en donde se va a subir la imagen
+        canvas.create_text(250, 80, text="Sube una imagen para que sea tu foto de perfil",
+                         fill="black", font=("Small fonts", 14))
+
+        canvas.create_text(250, 200, text="Sube una cancion",
+                           fill="black", font=("Small fonts", 14))
+        def seleccionar_imagen():
+            ruta_imagen = filedialog.askopenfilename()
+            if ruta_imagen:
+                # Ruta donde se guarda la imagen seleccionada
+                destino = "C://Users//gonza//PycharmProjects//MFT//Imagenes usuario"
+                shutil.copy(ruta_imagen, destino)
+
+        btn_seleccionar_imagen = tk.Button(canvas, text="Seleccionar Imagen", command=seleccionar_imagen)
+        btn_seleccionar_imagen.place(relx=0.37, rely=0.34)
+
+        def seleccionar_cancion():
+            ruta_cancion = filedialog.askopenfilename(filetypes=[("Archivos de audio", "*.mp3")])
+
+            if ruta_cancion:
+                destino2 = "C://Users//gonza//PycharmProjects//MFT//Imagenes usuario"
+                shutil.copy(ruta_cancion, destino2)
+
+        btn_seleccionar_cancion = tk.Button(canvas, text="Seleccionar cancion", command=seleccionar_cancion)
+        btn_seleccionar_cancion.place(relx=0.37, rely=0.6)
+        btregresar2 = tk.Button(canvas, text="Inicio", width=6, height=2,
+                             command=lambda: [ventana_registro.destroy(), ventanaP.deiconify()]).place(x=40, y=10)
+
+
+
 def iniciar_sesion():
-    global cont
+    global cont, username, password
     username = entry_username.get()
     password = entry_password.get()
 
@@ -70,18 +105,6 @@ entry_password.place(relx=0.425, rely=0.6)
 
 btn_iniciar_sesion = tk.Button(ventanaP, text="Iniciar Sesión", command=iniciar_sesion).place(relx=0.445, rely=0.65)
 btn_registrar = tk.Button(ventanaP, text="Registrar", command=registrar).place(relx=0.452, rely=0.7)
-
-
-def infojugador():
-    global ventana_info, nombreju
-    ventanaP.withdraw()
-    ventana_info = tk.Toplevel()
-    ventana_info.geometry("568x650")
-    ventana_info.resizable(False, False)
-
-#canvas
-    canvas = tk.Canvas(ventana_info, width=568, height=650, bg="#D5D2FF")
-    canvas.place(x=0, y=0)
 
 
 
