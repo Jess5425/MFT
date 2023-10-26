@@ -15,26 +15,37 @@ except FileNotFoundError:
 def registrar():
     username = entry_username.get()
     password = entry_password.get()
-    usuarios[username] = password
+
     if username in usuarios:
         messagebox.showerror("Registro", "Usuario ya existente. Por favor elija otro.")
     else:
+        usuarios[username] = password
         with open('usuarios.json', 'w') as archivo:
             json.dump(usuarios, archivo)
         entry_username.delete(0, 'end')
         entry_password.delete(0, 'end')
         messagebox.showinfo("Registro", "Usuario registrado con éxito.")
+        ventana_registro = tk.Toplevel()
+        ventana_registro.geometry("568x650")
+        ventana_registro.resizable(False, False)
+
+        # canvas
+        canvas = tk.Canvas(ventana_registro, width=568, height=650, bg="#D5D2FF")
+        canvas.place(x=0, y=0)
 
 def iniciar_sesion():
+    global cont
     username = entry_username.get()
     password = entry_password.get()
 
-    if username in usuarios and usuarios[username] == password and cont == 2:
+    if username in usuarios and usuarios[username] == password and cont == 1:
         messagebox.showinfo("Inicio de Sesión", "Inicio de sesión de jugador 2 exitoso.")
         cont += 1
-    elif username in usuarios and usuarios[username] == password:
-        messagebox.showinfo("Inicio de Sesión", "Inicio de sesión de jugador 2 exitoso.")
-
+    elif username in usuarios and usuarios[username] == password and cont == 0:
+        messagebox.showinfo("Inicio de Sesión", "Inicio de sesión de jugador 1 exitoso.")
+        cont += 1
+    elif username in usuarios and usuarios[username] == password and cont >= 2:
+        messagebox.showinfo("Inicio de Sesión", "No se pudo iniciar sesión ya que ya está el limite de usuarios ingresados.")
     else:
         messagebox.showerror("Inicio de Sesión", "Nombre de usuario o contraseña incorrectos.")
     entry_username.delete(0, 'end')
