@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import filedialog
 import shutil
+import os
 
 global cont, username, password
 cont = 0
@@ -50,6 +51,16 @@ def registrar():
                 # Ruta donde se guarda la imagen seleccionada
                 destino = "C://Users//gonza//PycharmProjects//MFT//Imagenes usuario"
                 shutil.copy(ruta_imagen, destino)
+                nuevo_nombre = username + ".png"
+
+                # Obtiene el directorio de destino (puedes personalizar esto)
+                directorio_destino = "C:/Users/gonza/PycharmProjects/MFT/Imagenes usuario/"
+
+                # Combina el directorio de destino y el nuevo nombre para obtener la ruta completa
+                nueva_ruta = os.path.join(directorio_destino, nuevo_nombre)
+
+                # Mueve el archivo de la ruta original a la nueva ruta con el nuevo nombre
+                shutil.copy(ruta_imagen, nueva_ruta)
 
         btn_seleccionar_imagen = tk.Button(canvas, text="Seleccionar Imagen", command=seleccionar_imagen)
         btn_seleccionar_imagen.place(relx=0.37, rely=0.34)
@@ -58,8 +69,11 @@ def registrar():
             ruta_cancion = filedialog.askopenfilename(filetypes=[("Archivos de audio", "*.mp3")])
 
             if ruta_cancion:
-                destino2 = "C://Users//gonza//PycharmProjects//MFT//Imagenes usuario"
-                shutil.copy(ruta_cancion, destino2)
+                nuevo_nombre_cancion = username + ".mp3"  # Cambiar el nombre de la canción
+
+                directorio_destino2 = "C:/Users/gonza/PycharmProjects/MFT/Imagenes usuario/"
+                nueva_rutac = os.path.join(directorio_destino2, nuevo_nombre_cancion)
+                shutil.copy(ruta_cancion, nueva_rutac)
 
         btn_seleccionar_cancion = tk.Button(canvas, text="Seleccionar cancion", command=seleccionar_cancion)
         btn_seleccionar_cancion.place(relx=0.37, rely=0.6)
@@ -69,16 +83,20 @@ def registrar():
 
 
 def iniciar_sesion():
-    global cont, username, password
+    global cont
     username = entry_username.get()
     password = entry_password.get()
 
     if username in usuarios and usuarios[username] == password and cont == 1:
         messagebox.showinfo("Inicio de Sesión", "Inicio de sesión de jugador 2 exitoso.")
         cont += 1
+        nombre_jugador2 = tk.Label(ventanaP, text=username)
+        nombre_jugador2.place(relx=0.8, rely=0.3)
     elif username in usuarios and usuarios[username] == password and cont == 0:
         messagebox.showinfo("Inicio de Sesión", "Inicio de sesión de jugador 1 exitoso.")
         cont += 1
+        nombre_jugador1 = tk.Label(ventanaP, text=username)
+        nombre_jugador1.place(relx=0.2, rely=0.3)
     elif username in usuarios and usuarios[username] == password and cont >= 2:
         messagebox.showinfo("Inicio de Sesión", "No se pudo iniciar sesión ya que ya está el limite de usuarios ingresados.")
     else:
@@ -105,8 +123,6 @@ entry_password.place(relx=0.425, rely=0.6)
 
 btn_iniciar_sesion = tk.Button(ventanaP, text="Iniciar Sesión", command=iniciar_sesion).place(relx=0.445, rely=0.65)
 btn_registrar = tk.Button(ventanaP, text="Registrar", command=registrar).place(relx=0.452, rely=0.7)
-
-
 
 #btn_inicio_sesion = tk.Button(ventanaP, text="boton que se usa dps", width=15, height=2, command= infojugador).place(relx=0.425, rely=0.8)
 btnjugar = tk.Button(ventanaP, text="JUGAR", width=10, height=2).place(relx=0.44, rely=0.9)
