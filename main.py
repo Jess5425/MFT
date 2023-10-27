@@ -124,7 +124,7 @@ def iniciar_sesion():
 
 #Ventana que va a dar a elegir el rol del jugador
 def definir_rol():
-    global cont, player1, player2
+    global cont, player1, player2, ventana_definir_rol
     if cont == 2:
         ventanaP.withdraw()
         ventana_definir_rol = tk.Toplevel()
@@ -135,12 +135,20 @@ def definir_rol():
         canvas_rol.place(x=0, y=0)
 
         canvas_rol.create_text(200, 100, text="¿Cual jugador sera el defensor?", fill="black", font=("Arial", 16))
+        def defensor_pl1():
+            juego()
 
-        btn_jugador1 = tk.Button(canvas_rol, text=player1, width=15, height=15).place(relx=0.25, rely=0.34)
+        btn_jugador1 = tk.Button(canvas_rol, text=player1, width=15, height=15, command=defensor_pl1).place(relx=0.25, rely=0.34)
         btn_jugador2 = tk.Button(canvas_rol, text=player2, width=15, height=15).place(relx=0.5, rely=0.34)
 
     else:
         messagebox.showerror("Problema con inicio de sesión", "Se ocupa que dos usuarios esten registrados.")
+
+def juego():
+    ventana_definir_rol.withdraw()
+    ventana_juego = tk.Toplevel()
+    ventana_juego.geometry("900x650")
+    ventana_juego.resizable(False, False)
 
 
 
