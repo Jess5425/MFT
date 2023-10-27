@@ -5,8 +5,26 @@ from tkinter import filedialog
 import shutil
 import os
 
-global cont, username, password
+global cont, username, password, player1, player2
 cont = 0
+
+#VENTANA PRINCIPAL
+ventanaP = tk.Tk()
+ventanaP.title("Registro e Inicio de Sesión")
+ventanaP.geometry("987x629")
+ventanaP.resizable(False, False)
+
+#labels de username y password
+label_username = tk.Label(ventanaP, text="Nombre de Usuario:")
+label_username.place(relx=0.425, rely=0.45)
+entry_username = tk.Entry(ventanaP)
+entry_username.place(relx=0.42, rely=0.5)
+
+label_password = tk.Label(ventanaP, text="Contraseña:")
+label_password.place(relx=0.425, rely=0.55)
+entry_password = tk.Entry(ventanaP, show="*")
+entry_password.place(relx=0.425, rely=0.6)
+
 
 # Crear o abrir el archivo 'usuarios.json' con un diccionario vacío
 try:
@@ -29,7 +47,6 @@ def registrar():
         entry_username.delete(0, 'end')
         entry_password.delete(0, 'end')
 
-        #messagebox.showinfo("Registro", "Usuario registrado con éxito.")
         ventanaP.withdraw()
         ventana_registro = tk.Toplevel() #ventana que nos va a ayudar a recopilar mas datos como foto, correo, cancion
         ventana_registro.geometry("500x350")
@@ -78,23 +95,24 @@ def registrar():
         btn_seleccionar_cancion = tk.Button(canvas, text="Seleccionar cancion", command=seleccionar_cancion)
         btn_seleccionar_cancion.place(relx=0.37, rely=0.6)
         btregresar2 = tk.Button(canvas, text="Inicio", width=6, height=2,
-                             command=lambda: [ventana_registro.destroy(), ventanaP.deiconify()]).place(x=40, y=10)
+                             command=lambda: [ventana_registro.destroy(), ventanaP.deiconify(),messagebox.showinfo("Registro", "Usuario registrado con éxito.") ]).place(x=40, y=10)
 
-
-
+#funcion que ayuda a iniciar la sesión
 def iniciar_sesion():
-    global cont
+    global cont, player1, player2
     username = entry_username.get()
     password = entry_password.get()
 
     if username in usuarios and usuarios[username] == password and cont == 1:
         messagebox.showinfo("Inicio de Sesión", "Inicio de sesión de jugador 2 exitoso.")
         cont += 1
+        player2 = username
         nombre_jugador2 = tk.Label(ventanaP, text=username)
         nombre_jugador2.place(relx=0.8, rely=0.3)
     elif username in usuarios and usuarios[username] == password and cont == 0:
         messagebox.showinfo("Inicio de Sesión", "Inicio de sesión de jugador 1 exitoso.")
         cont += 1
+        player1 = username
         nombre_jugador1 = tk.Label(ventanaP, text=username)
         nombre_jugador1.place(relx=0.2, rely=0.3)
     elif username in usuarios and usuarios[username] == password and cont >= 2:
@@ -104,29 +122,42 @@ def iniciar_sesion():
     entry_username.delete(0, 'end')
     entry_password.delete(0, 'end')
 
-ventanaP = tk.Tk()
-ventanaP.title("Registro e Inicio de Sesión")
-ventanaP.geometry("987x629")
-ventanaP.resizable(False, False)
+#Ventana que va a dar a elegir el rol del jugador
+def definir_rol():
+    global cont, player1, player2
+    if cont == 2:
+        ventanaP.withdraw()
+        ventana_definir_rol = tk.Toplevel()
+        ventana_definir_rol.geometry("600x500")
+        ventana_definir_rol.resizable(False, False)
+
+        canvas_rol = tk.Canvas(ventana_definir_rol, width=600, height=650, bg="#D5D2FF")
+        canvas_rol.place(x=0, y=0)
+
+        canvas_rol.create_text(200, 100, text="¿Cual jugador sera el defensor?", fill="black", font=("Arial", 16))
+
+        btn_jugador1 = tk.Button(canvas_rol, text=player1, width=15, height=15).place(relx=0.25, rely=0.34)
+        btn_jugador2 = tk.Button(canvas_rol, text=player2, width=15, height=15).place(relx=0.5, rely=0.34)
+
+    else:
+        messagebox.showerror("Problema con inicio de sesión", "Se ocupa que dos usuarios esten registrados.")
 
 
-label_username = tk.Label(ventanaP, text="Nombre de Usuario:")
-label_username.place(relx=0.425, rely=0.45)
-entry_username = tk.Entry(ventanaP)
-entry_username.place(relx=0.42, rely=0.5)
 
-label_password = tk.Label(ventanaP, text="Contraseña:")
-label_password.place(relx=0.425, rely=0.55)
-entry_password = tk.Entry(ventanaP, show="*")
-entry_password.place(relx=0.425, rely=0.6)
+def mejores_puntuaciones():
+    ventanaP.withdraw()
+    ventana_mejoresp = tk.Toplevel()
+    ventana_mejoresp.geometry("568x650")
+    ventana_mejoresp.resizable(False, False)
 
+    btregresar2 = tk.Button(ventana_mejoresp, text="Inicio", width=6, height=2,
+                         command=lambda: [ventana_mejoresp.destroy(), ventanaP.deiconify()]).place(x=40, y=20)
 
+#botones de la ventana principal
 btn_iniciar_sesion = tk.Button(ventanaP, text="Iniciar Sesión", command=iniciar_sesion).place(relx=0.445, rely=0.65)
 btn_registrar = tk.Button(ventanaP, text="Registrar", command=registrar).place(relx=0.452, rely=0.7)
-
-#btn_inicio_sesion = tk.Button(ventanaP, text="boton que se usa dps", width=15, height=2, command= infojugador).place(relx=0.425, rely=0.8)
-btnjugar = tk.Button(ventanaP, text="JUGAR", width=10, height=2).place(relx=0.44, rely=0.9)
-btnmp = tk.Button(ventanaP, text="MEJORES PUNTUACIONES", width=20, height=2).place(relx=0.403, rely=0.78)
+btnjugar = tk.Button(ventanaP, text="JUGAR", width=10, height=2, command=definir_rol).place(relx=0.44, rely=0.9)
+btnmp = tk.Button(ventanaP, text="MEJORES PUNTUACIONES", width=20, height=2, command=mejores_puntuaciones).place(relx=0.403, rely=0.78)
 btninfo = tk.Button(ventanaP, text="ACERCA DE", width=12, height=2).place(relx=0.83, rely=0.05)
 fuera = tk.Button(ventanaP, text="CERRAR", width=12, height=2, command=lambda: [ventanaP.destroy()]).place(relx=0.057, rely=0.05)
 
