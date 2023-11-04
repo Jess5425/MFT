@@ -158,13 +158,17 @@ def definir_rol():
 def juego():
     ventana_definir_rol.withdraw()
     tamano = (800,500)
+    blanco = (255, 255, 255)
     ventana_juego = pygame.display.set_mode(tamano)
     pygame.display.set_caption("Eagle Defender")
+    ventana_juego.fill(blanco)
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                pygame.quit()
                 sys.exit()
+        pygame.display.update()
 
 
 
