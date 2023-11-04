@@ -4,9 +4,20 @@ from tkinter import messagebox
 from tkinter import filedialog
 import shutil
 import os
+import pygame, sys
 
 global cont, username, password, player1, player2
 cont = 0
+
+#se inicia la libreria de pygame
+pygame.init()
+
+# Tamaño del mundo de juego
+filas = 10
+columnas = 10
+
+# Inicialización de la matriz con celdas vacías (0)
+mundo = [[0] * columnas for _ in range(filas)]
 
 #VENTANA PRINCIPAL
 ventanaP = tk.Tk()
@@ -146,9 +157,17 @@ def definir_rol():
 
 def juego():
     ventana_definir_rol.withdraw()
-    ventana_juego = tk.Toplevel()
-    ventana_juego.geometry("900x650")
-    ventana_juego.resizable(False, False)
+    tamano = (800,500)
+    ventana_juego = pygame.display.set_mode(tamano)
+    pygame.display.set_caption("Eagle Defender")
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+
+
+
 
 
 
