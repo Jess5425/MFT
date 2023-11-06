@@ -5,6 +5,9 @@ from tkinter import filedialog
 import shutil
 import os
 import pygame, sys
+from pygame.locals import *
+import math
+from PIL import Image, ImageTk
 
 global cont, username, password, player1, player2
 cont = 0
@@ -24,6 +27,10 @@ ventanaP = tk.Tk()
 ventanaP.title("Registro e Inicio de Sesión")
 ventanaP.geometry("987x629")
 ventanaP.resizable(False, False)
+
+imgfondo = ImageTk.PhotoImage(Image.open("aguila.png"))
+fondo = tk.Label(ventanaP, image= imgfondo)
+fondo.pack(side="bottom", fill="both")
 
 #labels de username y password
 label_username = tk.Label(ventanaP, text="Nombre de Usuario:")
@@ -149,28 +156,225 @@ def definir_rol():
         def defensor_pl1():
             juego()
 
+        def defensor_pl2():
+            juego()
+
         btn_jugador1 = tk.Button(canvas_rol, text=player1, width=15, height=15, command=defensor_pl1).place(relx=0.25, rely=0.34)
-        btn_jugador2 = tk.Button(canvas_rol, text=player2, width=15, height=15).place(relx=0.5, rely=0.34)
+        btn_jugador2 = tk.Button(canvas_rol, text=player2, width=15, height=15, command=defensor_pl2).place(relx=0.5, rely=0.34)
 
     else:
         messagebox.showerror("Problema con inicio de sesión", "Se ocupa que dos usuarios esten registrados.")
 
 def juego():
     ventana_definir_rol.withdraw()
-    tamano = (800,500)
+    tamano = (1300,800)
     blanco = (255, 255, 255)
+    #ventana para el juego
     ventana_juego = pygame.display.set_mode(tamano)
     pygame.display.set_caption("Eagle Defender")
     ventana_juego.fill(blanco)
+    #fondo para el juego
+    fondo_pantallajuego = pygame.image.load("Imagenes/fondo_juego.jpg")
+    fondo_pantallajuego = pygame.transform.scale(fondo_pantallajuego, (1300, 800))
+    ventana_juego.blit(fondo_pantallajuego, (0, 0))
+
+    #imagenes de los bloques
+    bloquea = pygame.image.load("Imagenes/Acero.jpg")
+    bloque_acero = pygame.transform.scale(bloquea, (40, 40))
+
+    bloquec = pygame.image.load("Imagenes/Concreto.jpg")
+    bloque_concreto = pygame.transform.scale(bloquec, (40, 40))
+
+    bloquem = pygame.image.load("Imagenes/Madera.jpg")
+    bloque_madera = pygame.transform.scale(bloquem, (40, 40))
+
+    #Clase que ayuda a poner los bloques como un boton y tenerlos en la pantalla
+    class Image_button:
+        def __init__(self, x, y, image, key):
+            self.x = x
+            self.y = y
+            self.image = image
+            self.rect = image.get_rect(topleft=(x, y))
+            self.key = key
+            self.clicked = False
+            self.visible = True
+
+        # Function to draw the buttons created
+        def draw(self, screen):
+            if self.visible:
+                screen.blit(self.image, (self.x, self.y))  # Draw it in the screen
+
+        # Check if the key is pressed or not
+        def check_keypress(self, event):
+            if event.type == pygame.MOUSEBUTTONDOWN and self.visible:
+                if self.rect.collidepoint(event.pos):
+                    self.clicked = True
+                else:
+                    self.clicked = False
+            elif event.type == pygame.MOUSEBUTTONUP and self.visible:
+                self.clicked = False
+            elif event.type == pygame.KEYDOWN and event.key == self.key and not self.clicked and self.visible:
+                self.clicked = True
+                print(f"Tecla {pygame.key.name(self.key)}")  # Print to check if pressed
+            elif event.type == pygame.KEYUP:
+                self.clicked = False
+            else:
+                self.clicked = False
+
+        # Set new position
+        def set_position(self, x, y):
+            self.rect.x = x
+            self.rect.y = y
+
+        # Hide the button in the screen
+        def hide(self):
+            self.visible = False
+
+        # Show the button in the screen
+        def show(self):
+            self.visible = True
+
+    #instancias de la clase button, se utiliza para los tres tipos de bloque
+    bmadera = Image_button(70, 320, bloque_madera, K_a)
+    bmadera.draw(ventana_juego)
+    bmadera.show()
+
+    bacero = Image_button(70, 400, bloque_acero, K_s)
+    bacero.draw(ventana_juego)
+    bacero.show()
+
+    bconcreto = Image_button(70, 480, bloque_concreto, K_d)
+    bconcreto.draw(ventana_juego)
+    bconcreto.show()
+
+    #clase que ayuda a colocar los bloques en la pantalla de juego
+    class Movement(pygame.sprite.Sprite):
+        def __init__(self, image, initial_position, ini_angle, is_eagle, health):
+            super().__init__()
+            self.image = image
+            self.rect = self.image.get_rect()
+            self.rect.topleft = initial_position
+            self.rotation = ini_angle
+            self.is_moving = False
+            self.is_rotating = False
+            self.offset_x = 0
+            self.offset_y = 0
+            self.initial_angle = 0
+            self.is_eagle = is_eagle
+            self.is_colliding = False
+            self.health = health
+
+        def handle_move(self, event):
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if self.rect.collidepoint(event.pos):
+                        self.is_moving = True
+                        self.offset_x = self.rect.x - event.pos[0]
+                        self.offset_y = self.rect.y - event.pos[1]
+                elif event.button == 3:
+                    if self.rect.collidepoint(event.pos):
+                        self.is_rotating = True
+                        self.initial_angle = self.rotation - math.atan2(event.pos[1] - self.rect.centery,
+                                                                        event.pos[0] - self.rect.centerx)
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1 or event.button == 3:
+                    self.is_moving = False
+                    self.is_rotating = False
+
+        def update(self, others):
+            if self.is_moving:
+                new_x = pygame.mouse.get_pos()[0] + self.offset_x
+                new_y = pygame.mouse.get_pos()[1] + self.offset_y
+                if not any(self.rect.colliderect(other) for other in others):
+                    if self.is_eagle == "y":
+                        if self.rect.x > 675 and self.rect.y > 100:
+                            if 1230 > new_x > 675:
+                                self.rect.x = new_x
+                            if 585 > new_y > 100:
+                                self.rect.y = new_y
+                    else:
+                        if self.rect.x > 665 and self.rect.y > 70:
+                            if 1290 > new_x > 675:
+                                self.rect.x = new_x
+                            if 630 > new_y > 80:
+                                self.rect.y = new_y
+
+                for other in others:
+                    if self.is_eagle == "y":
+                        if self.rect.colliderect(other):
+                            if other.rect.right - 30 < new_x > other.rect.left:
+                                self.rect.y = new_y
+                                self.rect.x = new_x
+                            if other.rect.right - 180 > new_x < other.rect.left - 100:
+                                self.rect.y = new_y
+                                self.rect.x = new_x
+                            if other.rect.bottom + 20 < new_y > other.rect.top:
+                                self.rect.y = new_y
+                                self.rect.x = new_x
+                            if other.rect.bottom - 100 > new_y < other.rect.top - 100:
+                                self.rect.y = new_y
+                                self.rect.x = new_x
+                    else:
+                        if self.rect.colliderect(other):
+                            if other.rect.right < new_x > other.rect.left:
+                                self.rect.y = new_y
+                                self.rect.x = new_x
+                            if other.rect.right - 70 > new_x < other.rect.left - 70:
+                                self.rect.y = new_y
+                                self.rect.x = new_x
+                            if other.rect.bottom < new_y > other.rect.top:
+                                self.rect.y = new_y
+                                self.rect.x = new_x
+                            if other.rect.bottom - 70 > new_y < other.rect.top - 70:
+                                self.rect.y = new_y
+                                self.rect.x = new_x
+
+            if self.is_rotating:
+                new_angle = math.atan2(pygame.mouse.get_pos()[1] - self.rect.centery,
+                                       pygame.mouse.get_pos()[0] - self.rect.centerx)
+                self.rotation = math.degrees(new_angle + self.initial_angle)
+                self.rotation %= 360
+
+        def draw(self, screen):
+            if self.health > 0:
+                rotated_image = pygame.transform.rotate(self.image, -self.rotation)
+                rotated_rect = rotated_image.get_rect(center=self.image.get_rect(topleft=self.rect.topleft).center)
+                screen.blit(rotated_image, rotated_rect.topleft)
+            else:
+                self.rect.topleft = (-1000, -1000)
+                self.kill()
+                del self
+
+        def getPosition(self):
+            return [str(self.offset_x), str(self.offset_y), str(self.health)]
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+
+            bmadera.check_keypress(event)
+            if bmadera.clicked:
+                print("bloque madera")
+                madera = Movement(bloque_madera, (500,500), 0, "n", 34)
+                madera.handle_move(event)
+                madera.draw(ventana_juego)
+
+            bacero.check_keypress(event)
+            if bacero.clicked:
+                print("bloque de acero")
+                acero = Movement(bloque_acero, (400, 400), 0, "n", 34)
+                acero.handle_move(event)
+                acero.draw(ventana_juego)
+
+            bconcreto.check_keypress(event)
+            if bconcreto.clicked:
+                print("bloque de concreto")
+                concreto = Movement(bloque_concreto, (300, 300), 0, "n", 34)
+                concreto.handle_move(event)
+                concreto.draw(ventana_juego)
         pygame.display.update()
-
-
 
 
 
